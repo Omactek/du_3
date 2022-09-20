@@ -17,8 +17,8 @@ with rasterio.open(path_ras_1) as DMR:
 
         with rasterio.open('ndvi_w.tif', 'w', **kwargs) as dst:
             slices = [(col_start, row_start, step, step) \
-                        for col_start in list(range(0, DMR.width, 256)) \
-                        for row_start in list(range(0, DMR.height, 256))
+                        for col_start in list(range(0, DMR.width, 5)) \
+                        for row_start in list(range(0, DMR.height, 5))
             ]
 
             #vypočítat
