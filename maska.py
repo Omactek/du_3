@@ -1,4 +1,5 @@
 import rasterio
+import numpy
 from rasterio.windows import Window
 from rasterio.transform import Affine
 from shapely.geometry import box
@@ -48,6 +49,28 @@ def r_intersect(raster_1, raster_2):
 
     return transform, raster_1_inter, raster_2_inter
 
+
+def create_mask(raster_1, raster_2, threeshold):
+    slices = [(col_start, row_start, step, step) \
+                        for col_start in list(range(0, raster_1.width, 256)) \
+                        for row_start in list(range(0, raster_2.height, 256))
+            ]
+
+    for slc in slices:
+                win = Window(*slc)
+
+                raster_1_data = raster_1.read(1, window=win).astype(float)
+                raster_2_data = raster_2.read(1, window=win).astype(float)
+
+                print(raster_1_data)
+
+
+                ndvi = (DMT_data - vis_data) / (DMT_data + vis_data)
+
+                write_win = Window(slc[0], slc[1], ndvi.shape[1], ndvi.shape[0])
+
+                dst.write_band(1, ndvi.astype(rasterio.float32), window=write_win)
+
 #otevření vsupních rasterů
 with rasterio.open(path_ras_1) as DMR:
     with rasterio.open(path_ras_2) as DMT:
@@ -61,8 +84,8 @@ with rasterio.open(path_ras_1) as DMR:
 
         with rasterio.open('ndvi_w.tif', 'w', **kwargs) as dst:
             slices = [(col_start, row_start, step, step) \
-                        for col_start in list(range(0, DMR.width, 5)) \
-                        for row_start in list(range(0, DMR.height, 5))
+                        for col_start in list(range(0, DMR.width, 256)) \
+                        for row_start in list(range(0, DMR.height, 256))
             ]
 
             #vypočítat
