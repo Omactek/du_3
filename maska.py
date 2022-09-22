@@ -49,28 +49,25 @@ def r_intersect(raster_1, raster_2):
 
     return transform, raster_1_inter, raster_2_inter
 
+def create_mask_matrix(dmt, dmr, threeshold):
+    mask_matrix = (dmt+1) - dmr
+    return mask_matrix
 
 def create_mask(raster_1, raster_2, threeshold):
-    with rasterio.open('ndvi_w.tif', 'w', **kwargs) as dst:
+    with rasterio.open('mask.tif', 'w', **kwargs) as dst:
         slices = [(col_start, row_start, step, step) \
                             for col_start in list(range(0, raster_1.shape[0], 5)) \
                             for row_start in list(range(0, raster_2.shape[1], 5))
                 ]
 
         for slc in slices:
-                    win = Window(*slc)
+                    mask = create_mask_matrix(raster_1[(slc[1]):(slc[1] + 5), slc[0]:(slc[0] + 5)],raster_2[(slc[1]):(slc[1] + 5), slc[0]:(slc[0] + 5)], 1)
+                    print(type(mask))
+                    print(mask)
 
-                    print(type(raster_1))
-                    print(raster_1)
+                    win = Window(slc[0], slc[1], mask.shape[1], mask.shape[0])
 
-
-                    ndvi = (raster_1 + 1) / raster_2
-                    print(type(ndvi))
-                    print(ndvi)
-
-                    write_win = Window(slc[0], slc[1], ndvi.shape[1], ndvi.shape[0])
-
-                    dst.write_band(1, ndvi.astype(rasterio.float32), window=write_win)
+                    dst.write_band(1, mask.astype(rasterio.float32), window=win)
 
 #otevření vsupních rasterů
 with rasterio.open(path_ras_1) as DMR:
