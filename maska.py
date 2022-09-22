@@ -52,53 +52,37 @@ def r_intersect(raster_1, raster_2):
 
     return transform, raster_1_inter, raster_2_inter
 
-def extract_raster_by_mask(raster, mask, threeshold):
-    extracted_matrix = numpy.where(mask == threeshold, raster, numpy.nan)
-    return extracted_matrix
 
-def create_mask(raster_1, raster_2, threeshold, step, key_arg):
+def create_rasters(raster_1, raster_2, threeshold, step, key_arg):
     with rasterio.open('mask.tif', 'w', **key_arg) as mask_dst:
         with rasterio.open('slopes.tif', 'w', **key_arg) as slopes_dst:
             slices = [(col_start, row_start, step, step) \
                                 for col_start in list(range(0, raster_1.shape[0], step)) \
                                 for row_start in list(range(0, raster_2.shape[1], step))]
 
+            #cuts raster to blocks
             for slc in slices:
                 raster_1_block = raster_1[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)]
                 raster_2_block = raster_2[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)]
 
-                mask = numpy.where(abs((raster_1_block - raster_2_block))<threeshold,1,numpy.nan)
+                #creates matrix, if the difference in Z is lower than threeshold saves 1 else saves nan
+                mask = numpy.where(abs((raster_1_block - raster_2_block)) < threeshold,1,numpy.nan)
 
+                #writes mask matrix to raster
                 win = Window(slc[0], slc[1], mask.shape[1], mask.shape[0])
                 mask_dst.write_band(1, mask.astype(rasterio.float32), window=win)
 
-                extracted_matrix = numpy.where(mask == threeshold, raster_2_block, numpy.nan)
+                #creates matrix where if value in mask equals threeshold saves dmt value else saves nan
+                extracted_matrix = numpy.where(mask == 1, raster_2_block, numpy.nan)
 
+                #creates matrix of slope
                 x,y = numpy.gradient(extracted_matrix, 1)
                 slope = numpy.sqrt(x ** 2 + y ** 2)
                 slope_deg = slope*(180/pi)
 
+                #writes slope matrix to raster
                 slopes_dst.write_band(1, slope_deg.astype(rasterio.float32), window=win)
 
-"""
-def create_slope_by_mask(raster, mask, threeshold, step, key_arg):
-    with rasterio.open('slopes.tif', 'w', **key_arg) as dst:
-        slices = [(col_start, row_start, step, step) \
-                            for col_start in list(range(0, raster.shape[0], step)) \
-                            for row_start in list(range(0, mask.shape[1], step))]
-
-        for slc in slices:
-            raster_block = raster[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)]
-            mask_block = mask[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)]
-
-            extracted_matrix = numpy.where(mask_block == threeshold, raster_block, numpy.nan)
-            
-            print(numpy.gradient(extracted_matrix, 1))
-
-            win = Window(slc[0], slc[1], mask.shape[1], mask.shape[0])
-
-            dst.write_band(1, mask.astype(rasterio.float32), window=win)
-"""
 """
 #otevření vsupních rasterů
 def run(path_ras_1, path_ras_2):
@@ -149,4 +133,4 @@ with rasterio.open(path_ras_1) as DMR:
 
 
         transform, r1, r2 = r_intersect(DMR, DMT)
-        create_mask(r1, r2, 1, 2560, kwargs)
+        create_rasters(r1, r2, 1, 25600, kwargs)
