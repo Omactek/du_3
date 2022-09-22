@@ -17,8 +17,8 @@ def r_intersect(raster_1, raster_2):
     bb_raster_2 = box(raster_2.bounds[0], raster_2.bounds[1], raster_2.bounds[2], raster_2.bounds[3])
 
     #saves edge coordinates
-    xminR1, yminR1, xmaxR1, ymaxR1 = raster_1.bounds #??????????
-    xminR2, yminR2, xmaxR2, ymaxR2 = raster_2.bounds
+    xminR1, ymaxR1 = raster_1.bounds
+    xminR2, ymaxR2 = raster_2.bounds
 
     #creates intersection and transforms it
     intersection = bb_raster_1.intersection(bb_raster_2)
@@ -139,8 +139,8 @@ args = parser.parse_args()
 run(args.raster_1, args.raster_2)
 """
 #otevření vsupních rasterů
-path_ras_1 = "dmr_input.tif"
-path_ras_2 = "dmt_input.tif"
+path_ras_1 = "D:\Downloads\DTM.tif"
+path_ras_2 = "D:\Downloads\DSM_1M.tif"
 with rasterio.open(path_ras_1) as DMR:
     with rasterio.open(path_ras_2) as DMT:
 
