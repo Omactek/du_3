@@ -17,8 +17,8 @@ def r_intersect(raster_1, raster_2):
     bb_raster_2 = box(raster_2.bounds[0], raster_2.bounds[1], raster_2.bounds[2], raster_2.bounds[3])
 
     #saves edge coordinates
-    xminR1, ymaxR1 = raster_1.bounds
-    xminR2, ymaxR2 = raster_2.bounds
+    xminR1, yminR1, xmaxR1, ymaxR1 = raster_1.bounds
+    xminR2, yminR1, xmaxR1, ymaxR2 = raster_2.bounds
 
     #creates intersection and transforms it
     intersection = bb_raster_1.intersection(bb_raster_2)
@@ -133,4 +133,4 @@ with rasterio.open(path_ras_1) as DMR:
 
 
         transform, r1, r2 = r_intersect(DMR, DMT)
-        create_rasters(r1, r2, 1, 25600, kwargs)
+        create_rasters(r1, r2, 1, 5560, kwargs)
