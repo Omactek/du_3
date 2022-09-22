@@ -4,7 +4,7 @@
   sklon.
   
   Uživatel vkládá do programu DMT a DMR přes příkazovou řádku v rastrovém formátu .tif.
-  Tento program nejprve vyhodnotí rozdíl nadmořských výšek DMT a DMR. V místech, kde je rozdíl menší než 1 metr, následně vyhodnotí sklon. Tento sklon je uložen jako rastr pod názvem slopes.tif.
+  Tento program nejprve vyhodnotí rozdíl nadmořských výšek DMT a DMR. V místech, kde je rozdíl menší než 1 metr, následně vypočítá sklon. Tento sklon je uložen jako rastr pod názvem slopes.tif.
   Při běhu programu je uložena také maska míst bez zástavby (viz výše) pod názvem mask.tif.
   
   Při zpracování dat program napřed ověří, že oba vstupní soubory mají stejný souřadnicový systém. Pokud ne, uživatel je upozorněn.
