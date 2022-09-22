@@ -51,25 +51,23 @@ def r_intersect(raster_1, raster_2):
 
 
 def create_mask(raster_1, raster_2, threeshold):
-    slices = [(col_start, row_start, step, step) \
-                        for col_start in list(range(0, raster_1.width, 256)) \
-                        for row_start in list(range(0, raster_2.height, 256))
-            ]
+    with rasterio.open('ndvi_w.tif', 'w', **kwargs) as dst:
+        slices = [(col_start, row_start, step, step) \
+                            for col_start in list(range(0, raster_1.shape[0], 256)) \
+                            for row_start in list(range(0, raster_2.shape[1], 256))
+                ]
 
-    for slc in slices:
-                win = Window(*slc)
+        for slc in slices:
+                    print(type(raster_1))
+                    print(raster_1)
 
-                raster_1_data = raster_1.read(1, window=win).astype(float)
-                raster_2_data = raster_2.read(1, window=win).astype(float)
+                    ndvi = (raster_1 + 1) / raster_2
+                    print(type(ndvi))
+                    print(ndvi)
 
-                print(raster_1_data)
+                    write_win = Window(slc[0], slc[1], ndvi.shape[1], ndvi.shape[0])
 
-
-                ndvi = (DMT_data - vis_data) / (DMT_data + vis_data)
-
-                write_win = Window(slc[0], slc[1], ndvi.shape[1], ndvi.shape[0])
-
-                dst.write_band(1, ndvi.astype(rasterio.float32), window=write_win)
+                    dst.write_band(1, ndvi.astype(rasterio.float32), window=write_win)
 
 #otevření vsupních rasterů
 with rasterio.open(path_ras_1) as DMR:
@@ -80,24 +78,5 @@ with rasterio.open(path_ras_1) as DMR:
         kwargs.update(dtype=rasterio.float32, count=1, compress='lzw')
 
 
-        r_intersect(DMR, DMT)
-
-        with rasterio.open('ndvi_w.tif', 'w', **kwargs) as dst:
-            slices = [(col_start, row_start, step, step) \
-                        for col_start in list(range(0, DMR.width, 256)) \
-                        for row_start in list(range(0, DMR.height, 256))
-            ]
-
-            #vypočítat
-            # for ji, window in src.block_windows(1):
-            for slc in slices:
-                win = Window(*slc)
-
-                DMT_data = DMT.read(1, window=win).astype(float)
-                vis_data = DMR.read(1, window=win).astype(float)+1
-
-                ndvi = (DMT_data - vis_data) / (DMT_data + vis_data)
-
-                write_win = Window(slc[0], slc[1], ndvi.shape[1], ndvi.shape[0])
-
-                dst.write_band(1, ndvi.astype(rasterio.float32), window=write_win)
+        transform, r1, r2 = r_intersect(DMR, DMT)
+        create_mask(r1, r2, 1)
