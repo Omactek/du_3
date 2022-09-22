@@ -54,22 +54,21 @@ def compute_masking_matrix(dmt, dmr, threeshold):
     masking_matrix = numpy.where(abs((dmt-dmr))<threeshold,1,numpy.nan)
     return masking_matrix
 
-def create_mask(raster_1, raster_2, threeshold):
-    with rasterio.open('mask.tif', 'w', **kwargs) as dst:
+def create_mask(raster_1, raster_2, threeshold, step, key_arg):
+    with rasterio.open('mask.tif', 'w', **key_arg) as dst:
         slices = [(col_start, row_start, step, step) \
-                            for col_start in list(range(0, raster_1.shape[0], 5)) \
-                            for row_start in list(range(0, raster_2.shape[1], 5))
-                ]
+                            for col_start in list(range(0, raster_1.shape[0], step)) \
+                            for row_start in list(range(0, raster_2.shape[1], step))]
 
         for slc in slices:
-                    mask = compute_masking_matrix(raster_1[(slc[1]):(slc[1] + 5), slc[0]:(slc[0] + 5)],raster_2[(slc[1]):(slc[1] + 5), slc[0]:(slc[0] + 5)], 1)
+                    mask = compute_masking_matrix(raster_1[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)],raster_2[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)], threeshold)
                     print(type(mask))
                     print(mask)
 
                     win = Window(slc[0], slc[1], mask.shape[1], mask.shape[0])
 
                     dst.write_band(1, mask.astype(rasterio.float32), window=win)
-
+"""
 #otevření vsupních rasterů
 def run(path_ras_1, path_ras_2):
     with rasterio.open(path_ras_1) as DMR:
@@ -93,13 +92,11 @@ def run(path_ras_1, path_ras_2):
             except rasterio.errors.RasterioError():
                 sys.exit("An unexpected error occurred. Please try again.")
 
-            step = 256
             kwargs = DMR.meta
             kwargs.update(dtype=rasterio.float32, count=1, compress='lzw')
 
-
-            transform, r1, r2 = r_intersect(DMR, DMT)
-            create_mask(r1, r2, 1)
+            transform, r1, r2 = r_intersect(DMR, DMT) #myslím, že transform nepotřebujeme, ale nejsem si jistý
+            create_mask(r1, r2, 1, 256, kwargs)
 
 parser = argparse.ArgumentParser(description="Takes terrain and surface rasters.")
 parser.add_argument('--surface', dest = "raster_1", required=True,
@@ -109,3 +106,16 @@ parser.add_argument('--terrain', dest="raster_2", required=True,
 args = parser.parse_args()
 
 run(args.raster_1, args.raster_2)
+"""
+#otevření vsupních rasterů
+path_ras_1 = "dmr_input.tif"
+path_ras_2 = "dmt_input.tif"
+with rasterio.open(path_ras_1) as DMR:
+    with rasterio.open(path_ras_2) as DMT:
+
+        kwargs = DMR.meta
+        kwargs.update(dtype=rasterio.float32, count=1, compress='lzw')
+
+
+        transform, r1, r2 = r_intersect(DMR, DMT)
+        create_mask(r1, r2, 1, 256, kwargs)
