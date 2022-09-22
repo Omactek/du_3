@@ -3,6 +3,7 @@ import numpy
 from rasterio.windows import Window
 from rasterio.transform import Affine
 from shapely.geometry import box
+import numpy.ma
 
 path_ras_1 = "raster_zkouska_2.tif"
 path_ras_2 = "raster_zkouska_2.tif"
@@ -49,9 +50,9 @@ def r_intersect(raster_1, raster_2):
 
     return transform, raster_1_inter, raster_2_inter
 
-def create_mask_matrix(dmt, dmr, threeshold):
-    mask_matrix = (dmt+1) - dmr
-    return mask_matrix
+def compute_masking_matrix(dmt, dmr, threeshold):
+    masking_matrix = numpy.where(abs((dmt-dmr))<threeshold,1,numpy.nan)
+    return masking_matrix
 
 def create_mask(raster_1, raster_2, threeshold):
     with rasterio.open('mask.tif', 'w', **kwargs) as dst:
@@ -61,7 +62,7 @@ def create_mask(raster_1, raster_2, threeshold):
                 ]
 
         for slc in slices:
-                    mask = create_mask_matrix(raster_1[(slc[1]):(slc[1] + 5), slc[0]:(slc[0] + 5)],raster_2[(slc[1]):(slc[1] + 5), slc[0]:(slc[0] + 5)], 1)
+                    mask = compute_masking_matrix(raster_1[(slc[1]):(slc[1] + 5), slc[0]:(slc[0] + 5)],raster_2[(slc[1]):(slc[1] + 5), slc[0]:(slc[0] + 5)], 1)
                     print(type(mask))
                     print(mask)
 
