@@ -52,25 +52,9 @@ def r_intersect(raster_1, raster_2):
 
 def create_mask(raster_1, raster_2, threeshold):
     with rasterio.open('ndvi_w.tif', 'w', **kwargs) as dst:
-        slices = [(col_start, row_start, step, step) \
-                            for col_start in list(range(0, raster_1.shape[0], 5)) \
-                            for row_start in list(range(0, raster_2.shape[1], 5))
-                ]
 
-        for slc in slices:
-                    win = Window(*slc)
-
-                    print(type(raster_1))
-                    print(raster_1)
-
-
-                    ndvi = (raster_1 + 1) / raster_2
-                    print(type(ndvi))
-                    print(ndvi)
-
-                    write_win = Window(slc[0], slc[1], ndvi.shape[1], ndvi.shape[0])
-
-                    dst.write_band(1, ndvi.astype(rasterio.float32), window=write_win)
+        for x in numpy.nditer(raster_1):
+            print(x, end=' ')
 
 #otevření vsupních rasterů
 with rasterio.open(path_ras_1) as DMR:
@@ -82,4 +66,9 @@ with rasterio.open(path_ras_1) as DMR:
 
 
         transform, r1, r2 = r_intersect(DMR, DMT)
+        new_dataset = rasterio.open('test1.tif', 'w',**kwargs)
+
+        new_dataset.write(r1, 1)
+        new_dataset.close()
         create_mask(r1, r2, 1)
+print(r1)
