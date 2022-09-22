@@ -15,7 +15,7 @@ def r_intersect(raster_1, raster_2):
     bb_raster_2 = box(raster_2.bounds[0], raster_2.bounds[1], raster_2.bounds[2], raster_2.bounds[3])
 
     #saves edge coordinates
-    xminR1, yminR1, xmaxR1, ymaxR1 = raster_1.bounds
+    xminR1, yminR1, xmaxR1, ymaxR1 = raster_1.bounds #??????????
     xminR2, yminR2, xmaxR2, ymaxR2 = raster_2.bounds
 
     #creates intersection and transforms it
@@ -50,9 +50,9 @@ def r_intersect(raster_1, raster_2):
 
     return transform, raster_1_inter, raster_2_inter
 
-def compute_masking_matrix(dmt, dmr, threeshold):
-    masking_matrix = numpy.where(abs((dmt-dmr))<threeshold,1,numpy.nan)
-    return masking_matrix
+def extract_raster_by_mask(raster, mask, threeshold):
+    extracted_matrix = numpy.where(mask == threeshold, raster, numpy.nan)
+    return extracted_matrix
 
 def create_mask(raster_1, raster_2, threeshold, step, key_arg):
     with rasterio.open('mask.tif', 'w', **key_arg) as dst:
@@ -61,13 +61,33 @@ def create_mask(raster_1, raster_2, threeshold, step, key_arg):
                             for row_start in list(range(0, raster_2.shape[1], step))]
 
         for slc in slices:
-                    mask = compute_masking_matrix(raster_1[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)],raster_2[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)], threeshold)
-                    print(type(mask))
-                    print(mask)
+            raster_1_block = raster_1[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)]
+            raster_2_block = raster_2[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)]
 
-                    win = Window(slc[0], slc[1], mask.shape[1], mask.shape[0])
+            mask = numpy.where(abs((raster_1_block - raster_2_block))<threeshold,1,numpy.nan)
+            print(mask)
 
-                    dst.write_band(1, mask.astype(rasterio.float32), window=win)
+            win = Window(slc[0], slc[1], mask.shape[1], mask.shape[0])
+
+            dst.write_band(1, mask.astype(rasterio.float32), window=win)
+
+def create_slope_by_mask(raster, mask, threeshold, step, key_arg):
+    with rasterio.open('slopes.tif', 'w', **key_arg) as dst:
+        slices = [(col_start, row_start, step, step) \
+                            for col_start in list(range(0, raster.shape[0], step)) \
+                            for row_start in list(range(0, mask.shape[1], step))]
+
+        for slc in slices:
+            raster_block = raster[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)]
+            mask_block = mask[(slc[1]):(slc[1] + step), slc[0]:(slc[0] + step)]
+
+            extracted_matrix = numpy.where(mask_block == threeshold, raster_block, numpy.nan)
+            
+            print(numpy.gradient(extracted_matrix, 1))
+
+            win = Window(slc[0], slc[1], mask.shape[1], mask.shape[0])
+
+            dst.write_band(1, mask.astype(rasterio.float32), window=win)
 """
 #otevření vsupních rasterů
 def run(path_ras_1, path_ras_2):
@@ -119,3 +139,4 @@ with rasterio.open(path_ras_1) as DMR:
 
         transform, r1, r2 = r_intersect(DMR, DMT)
         create_mask(r1, r2, 1, 256, kwargs)
+        create_slope_by_mask(r2, )
