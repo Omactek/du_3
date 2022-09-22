@@ -4,9 +4,9 @@ from rasterio.windows import Window
 from rasterio.transform import Affine
 from shapely.geometry import box
 import numpy.ma
+import sys
+import argparse
 
-path_ras_1 = "raster_zkouska_2.tif"
-path_ras_2 = "raster_zkouska_2.tif"
 
 #function that returns intersction of both rasters
 def r_intersect(raster_1, raster_2):
@@ -71,13 +71,41 @@ def create_mask(raster_1, raster_2, threeshold):
                     dst.write_band(1, mask.astype(rasterio.float32), window=win)
 
 #otevření vsupních rasterů
-with rasterio.open(path_ras_1) as DMR:
-    with rasterio.open(path_ras_2) as DMT:
+def run(path_ras_1, path_ras_2):
+    with rasterio.open(path_ras_1) as DMR:
+        with rasterio.open(path_ras_2) as DMT:
 
-        step = 256
-        kwargs = DMR.meta
-        kwargs.update(dtype=rasterio.float32, count=1, compress='lzw')
+            try:
+                if DMR.crs == DMT.crs:
+                    pass
+                else:
+                    sys.exit("Chosen rasters do not have the same coordinate systems. Please choose rasters with the same coordinate systems.")
+
+            except rasterio.errors.CRSError(DMR):
+                sys.exit("The DMR raster does not have a valid coordinate system.")
+                    
+            except rasterio.errors.CRSError(DMT):
+                sys.exit("The DMT raster does not have a valid coordinate system.")
+                            
+            except rasterio.error.RasterioIOError:
+                sys.exit("At least one of input files is not a raster format file. Please choose raster files.")
+                
+            except rasterio.errors.RasterioError():
+                sys.exit("An unexpected error occurred. Please try again.")
+
+            step = 256
+            kwargs = DMR.meta
+            kwargs.update(dtype=rasterio.float32, count=1, compress='lzw')
 
 
-        transform, r1, r2 = r_intersect(DMR, DMT)
-        create_mask(r1, r2, 1)
+            transform, r1, r2 = r_intersect(DMR, DMT)
+            create_mask(r1, r2, 1)
+
+parser = argparse.ArgumentParser(description="Takes terrain and surface rasters.")
+parser.add_argument('--surface', dest = "raster_1", required=True,
+                    help='Path to DMR. (.tif format)')
+parser.add_argument('--terrain', dest="raster_2", required=True,
+                    help='Path to DMT. (.tif format)')
+args = parser.parse_args()
+
+run(args.raster_1, args.raster_2)
