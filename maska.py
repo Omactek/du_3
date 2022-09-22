@@ -1,3 +1,4 @@
+from cmath import pi
 import rasterio
 import numpy
 from rasterio.windows import Window
@@ -72,10 +73,12 @@ def create_mask(raster_1, raster_2, threeshold, step, key_arg):
                 mask_dst.write_band(1, mask.astype(rasterio.float32), window=win)
 
                 extracted_matrix = numpy.where(mask == threeshold, raster_2_block, numpy.nan)
-                x,y = numpy.gradient(extracted_matrix, 1)
 
-                win = Window(slc[0], slc[1], extracted_matrix.shape[1], extracted_matrix.shape[0])
-                slopes_dst.write_band(1, extracted_matrix.astype(rasterio.float32), window=win)   
+                x,y = numpy.gradient(extracted_matrix, 1)
+                slope = numpy.sqrt(x ** 2 + y ** 2)
+                slope_deg = slope*(180/pi)
+
+                slopes_dst.write_band(1, slope_deg.astype(rasterio.float32), window=win)
 
 """
 def create_slope_by_mask(raster, mask, threeshold, step, key_arg):
