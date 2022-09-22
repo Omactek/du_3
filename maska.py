@@ -76,7 +76,7 @@ def create_rasters(raster_1, raster_2, threeshold, step, key_arg):
                 extracted_matrix = numpy.where(mask == 1, raster_2_block, numpy.nan)
 
                 #creates matrix of slope
-                x,y = numpy.gradient(extracted_matrix, 1, edge_order=2)
+                x,y = numpy.gradient(extracted_matrix)
                 slope = numpy.sqrt(x ** 2 + y ** 2)
                 slope_deg = slope*(180/pi)
 
@@ -130,9 +130,8 @@ with rasterio.open(path_ras_1) as DMR:
 
         kwargs = DMR.meta
 
-
         transform, r1, r2 = r_intersect(DMR, DMT)
-        kwargs.update(driver="GTiff", dtype=rasterio.float32, compress='lzw',
-                          transform = transform)
+
+        kwargs.update(driver="GTiff", dtype=rasterio.float32, compress='lzw', transform = transform)
                           
-        create_rasters(r1, r2, 1, 35600, kwargs)
+        create_rasters(r1, r2, 1, 17800, kwargs)
