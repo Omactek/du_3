@@ -73,17 +73,16 @@ def create_rasters(raster_1, raster_2, threeshold, step, key_arg):
                 mask_dst.write_band(1, mask.astype(rasterio.float32), window=win)
 
                 #creates matrix where if value in mask equals threeshold saves dmt value else saves nan
-                extracted_matrix = numpy.where(mask == 1, raster_2_block, numpy.nan)
+                extracted_matrix = numpy.where(mask == 1, raster_1_block, numpy.nan)
 
                 #creates matrix of slope
                 x,y = numpy.gradient(extracted_matrix)
                 slope = numpy.sqrt(x ** 2 + y ** 2)
-                slope_deg = slope*(180/pi)
+                slope_deg = numpy.arctan(slope)*(180/pi)
 
                 #writes slope matrix to raster
                 slopes_dst.write_band(1, slope_deg.astype(rasterio.float32), window=win)
 
-"""
 #otevření vsupních rasterů
 def run(path_ras_1, path_ras_2):
     with rasterio.open(path_ras_1) as DMR:
@@ -111,7 +110,7 @@ def run(path_ras_1, path_ras_2):
             kwargs.update(dtype=rasterio.float32, count=1, compress='lzw')
 
             transform, r1, r2 = r_intersect(DMR, DMT) #myslím, že transform nepotřebujeme, ale nejsem si jistý
-            create_mask(r1, r2, 1, 256, kwargs)
+            create_rasters(r1, r2, 1, 17800, kwargs)
 
 parser = argparse.ArgumentParser(description="Takes terrain and surface rasters.")
 parser.add_argument('--surface', dest = "raster_1", required=True,
@@ -121,17 +120,3 @@ parser.add_argument('--terrain', dest="raster_2", required=True,
 args = parser.parse_args()
 
 run(args.raster_1, args.raster_2)
-"""
-#otevření vsupních rasterů
-path_ras_1 = "D:\Downloads\DTM.tif"
-path_ras_2 = "D:\Downloads\DSM_1M.tif"
-with rasterio.open(path_ras_1) as DMR:
-    with rasterio.open(path_ras_2) as DMT:
-
-        kwargs = DMR.meta
-
-        transform, r1, r2 = r_intersect(DMR, DMT)
-
-        kwargs.update(driver="GTiff", dtype=rasterio.float32, compress='lzw', transform = transform)
-                          
-        create_rasters(r1, r2, 1, 17800, kwargs)
