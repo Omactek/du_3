@@ -54,8 +54,8 @@ def r_intersect(raster_1, raster_2):
 
 
 def create_rasters(raster_1, raster_2, threeshold, step, key_arg):
-    with rasterio.open('mask.tif', 'w', **key_arg) as mask_dst:
-        with rasterio.open('slopes.tif', 'w', **key_arg) as slopes_dst:
+    with rasterio.open('mask.tiff', 'w', **key_arg) as mask_dst:
+        with rasterio.open('slopes.tiff', 'w', **key_arg) as slopes_dst:
             slices = [(col_start, row_start, step, step) \
                                 for col_start in list(range(0, raster_1.shape[0], step)) \
                                 for row_start in list(range(0, raster_2.shape[1], step))]
@@ -76,7 +76,7 @@ def create_rasters(raster_1, raster_2, threeshold, step, key_arg):
                 extracted_matrix = numpy.where(mask == 1, raster_2_block, numpy.nan)
 
                 #creates matrix of slope
-                x,y = numpy.gradient(extracted_matrix, 1)
+                x,y = numpy.gradient(extracted_matrix, 1, edge_order=2)
                 slope = numpy.sqrt(x ** 2 + y ** 2)
                 slope_deg = slope*(180/pi)
 
@@ -129,8 +129,10 @@ with rasterio.open(path_ras_1) as DMR:
     with rasterio.open(path_ras_2) as DMT:
 
         kwargs = DMR.meta
-        kwargs.update(dtype=rasterio.float32, count=1, compress='lzw')
 
 
         transform, r1, r2 = r_intersect(DMR, DMT)
-        create_rasters(r1, r2, 1, 5560, kwargs)
+        kwargs.update(driver="GTiff", dtype=rasterio.float32, compress='lzw',
+                          transform = transform)
+                          
+        create_rasters(r1, r2, 1, 35600, kwargs)
