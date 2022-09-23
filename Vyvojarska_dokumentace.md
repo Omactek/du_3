@@ -4,4 +4,6 @@
   
   Před samotnou analýzou rastrů je vykonána funkce intersect, která nachází průnik obou rastrů. Využíváme metodu intersection z knihovny Rasterio. Souřadnice hranic takového území ukládáme jako proměnné P1Y, P1X, P2Y, P2X, počítáme výšku a šířku průnikového okna a vytváříme matice těchto dvou rastrů nad průnikovým územím.
   
-  Nakonec voláme funkci create_rasters, která prochází vstupní rastry po blocích. Pokud je rozdíl hodnot menší než stanovený treeshold, nabývá takový pixel v masce hodnoty 1, pokud nikoli, je hodnota stanovena jako nan. Využíváme k tomu funkci where z knihovny numpy.
+  Nakonec voláme funkci create_rasters, která prochází vstupní rastry po blocích. Pokud je rozdíl hodnot menší než stanovený treeshold, nabývá takový pixel v masce hodnoty 1, pokud nikoli, je hodnota stanovena jako nan. Využíváme k tomu funkci where z knihovny numpy. Za využití stejné funkce poté nahradíme v masce místa s hodnotou 1 hodnotou nadmořské výšky z DMT.
+  
+ Pomocí těchto nadmořských výšek poté s využitím funkce gradient z knihovny numpy počítáme sklony, které jsou ukládány do rastru slopes.tiff. Maska je ukládána jako mask.tiff
