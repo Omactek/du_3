@@ -72,7 +72,7 @@ def create_rasters(raster_1, raster_2, threeshold, step, key_arg):
                 win = Window(slc[0], slc[1], mask.shape[1], mask.shape[0])
                 mask_dst.write_band(1, mask.astype(rasterio.float32), window=win)
 
-                #creates matrix where if value in mask equals threeshold saves dmt value else saves nan
+                #creates matrix where if value in mask equals 1 saves dmt value else saves nan
                 extracted_matrix = numpy.where(mask == 1, raster_2_block, numpy.nan)
 
                 #creates matrix of slope
@@ -112,7 +112,7 @@ def run(path_ras_1, path_ras_2):
             transform, r1, r2 = r_intersect(DMP, DMT)
             kwargs.update(driver="GTiff", dtype=rasterio.float32, compress='lzw', transform = transform, height = r2.shape[0], width = r2.shape[1])
 
-            create_rasters(r1, r2, 1, 17800, kwargs)
+            create_rasters(r1, r2, 1, 1000, kwargs)
 
 parser = argparse.ArgumentParser(description="Takes terrain and surface rasters.")
 parser.add_argument('--surface', dest = "raster_1", required=True,
