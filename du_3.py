@@ -94,11 +94,8 @@ def run(path_ras_1, path_ras_2):
                 else:
                     sys.exit("Chosen rasters do not have the same coordinate systems. Please choose rasters with the same coordinate systems.")
 
-            except rasterio.errors.CRSError(DMP):
-                sys.exit("The DMP raster does not have a valid coordinate system.")
-                    
-            except rasterio.errors.CRSError(DMT):
-                sys.exit("The DMT raster does not have a valid coordinate system.")
+            except rasterio.errors.CRSError():
+                sys.exit("The raster does not have a valid coordinate system.")
                             
             except rasterio.error.RasterioIOError:
                 sys.exit("At least one of input files is not a raster format file. Please choose raster files.")
@@ -112,7 +109,7 @@ def run(path_ras_1, path_ras_2):
             transform, r1, r2 = r_intersect(DMP, DMT)
             kwargs.update(driver="GTiff", dtype=rasterio.float32, compress='lzw', transform = transform, height = r2.shape[0], width = r2.shape[1])
 
-            create_rasters(r1, r2, 1, 1000, kwargs)
+            create_rasters(r1, r2, 1, 17800, kwargs)
 
 parser = argparse.ArgumentParser(description="Takes terrain and surface rasters.")
 parser.add_argument('--surface', dest = "raster_1", required=True,
