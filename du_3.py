@@ -57,8 +57,8 @@ def create_rasters(raster_1, raster_2, threeshold, step, key_arg):
     with rasterio.open('mask.tiff', 'w', **key_arg) as mask_dst:
         with rasterio.open('slopes.tiff', 'w', **key_arg) as slopes_dst:
             slices = [(col_start, row_start, step, step) \
-                                for col_start in list(range(0, raster_1.shape[0], step)) \
-                                for row_start in list(range(0, raster_2.shape[1], step))]
+                                for col_start in list(range(0, raster_1.shape[1], step)) \
+                                for row_start in list(range(0, raster_2.shape[0], step))]
 
             #cuts raster to blocks
             for slc in slices:
@@ -109,7 +109,7 @@ def run(path_ras_1, path_ras_2):
             transform, r1, r2 = r_intersect(DMP, DMT)
             kwargs.update(driver="GTiff", dtype=rasterio.float32, compress='lzw', transform = transform, height = r2.shape[0], width = r2.shape[1])
 
-            create_rasters(r1, r2, 1, 17800, kwargs)
+            create_rasters(r1, r2, 1, 1000, kwargs)
 
 parser = argparse.ArgumentParser(description="Takes terrain and surface rasters.")
 parser.add_argument('--surface', dest = "raster_1", required=True,
